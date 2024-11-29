@@ -1,70 +1,52 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 3001;
 
 // Middleware to parse JSON data
 app.use(express.json());
 
 // Sample in-memory data (use a database in real apps)
 let items = [
-    { id: 1, name: 'Item 1', description: 'This is item 1' },
-    { id: 2, name: 'Item 2', description: 'This is item 2' },
+    { id: 1, name: 'Chips', category: 'snack', link_foto: 'https://example.com/snack1.jpg', description: 'Delicious potato chips' },
+    { id: 2, name: 'Burger', category: 'non-snack', link_foto: 'https://example.com/non-snack1.jpg', description: 'Cheesy burger' },
+    { id: 3, name: 'Soda', category: 'minuman', link_foto: 'https://example.com/drink1.jpg', description: 'Refreshing soda drink' },
+    { id: 4, name: 'Chocolate Bar', category: 'snack', link_foto: 'https://example.com/snack2.jpg', description: 'Sweet chocolate bar' },
+    { id: 5, name: 'Pizza', category: 'non-snack', link_foto: 'https://example.com/non-snack2.jpg', description: 'Hot pizza slice' },
+    { id: 6, name: 'Coffee', category: 'minuman', link_foto: 'https://example.com/drink2.jpg', description: 'Hot brewed coffee' },
 ];
 
 // GET: Retrieve all items
 app.get('/api/items', (req, res) => {
-    res.json(items);
+    res.status(200).json(items);
 });
 
-// GET: Retrieve a single item by ID
+// GET: Retrieve an item by ID
 app.get('/api/items/:id', (req, res) => {
     const id = parseInt(req.params.id);
     const item = items.find(i => i.id === id);
 
     if (item) {
-        res.json(item);
+        res.status(200).json(item);
     } else {
         res.status(404).json({ error: 'Item not found' });
     }
 });
 
-// POST: Add a new item
-app.post('/api/items', (req, res) => {
-    const newItem = {
-        id: items.length + 1,
-        name: req.body.name,
-        description: req.body.description,
-    };
+// GET: Retrieve items by category
+app.get('/api/items/category/:category', (req, res) => {
+    const category = req.params.category.toLowerCase();
+    const filteredItems = items.filter(i => i.category.toLowerCase() === category);
 
-    items.push(newItem);
-    res.status(201).json(newItem);
-});
-
-// PUT: Update an existing item by ID
-app.put('/api/items/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    const item = items.find(i => i.id === id);
-
-    if (item) {
-        item.name = req.body.name || item.name;
-        item.description = req.body.description || item.description;
-        res.json(item);
+    if (filteredItems.length > 0) {
+        res.status(200).json(filteredItems);
     } else {
-        res.status(404).json({ error: 'Item not found' });
+        res.status(404).json({ error: `No items found in category: ${category}` });
     }
 });
 
-// DELETE: Remove an item by ID
-app.delete('/api/items/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    const index = items.findIndex(i => i.id === id);
-
-    if (index !== -1) {
-        const deletedItem = items.splice(index, 1);
-        res.json(deletedItem);
-    } else {
-        res.status(404).json({ error: 'Item not found' });
-    }
+// Error handling for invalid routes
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route not found' });
 });
 
 // Start the server
